@@ -1,6 +1,7 @@
 # This is a sample Python script.
-import pandas
 
+#import pandas
+#Revisions 1.0 Todat 2/11/: playing hith github
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -215,10 +216,10 @@ class New_statement_row:
         return
     def update_category(self):
             print (f"{self.row_tupple[1]} -> does not exist in bank_data <-")
-            cat_num = self.get_category()
-            type_purchase = category_items1[int(cat_num)]
-            bank_data[i[x]]= [int(debit), int(cat_num), type_purchase,
-                            bank_name, int(credit)]
+#            cat_num = self.get_category()
+#            type_purchase = category_items1[int(cat_num)]
+#            bank_data[i[x]]= [int(debit), int(cat_num), type_purchase,
+#                            bank_name, int(credit)]
             pass
 
 
@@ -286,8 +287,7 @@ while bank_choice != str(0):
             new_statement_row.change_sign_if_credit
             new_statement_row.update_amounts()
             new_statement_row.update_category()
-            request_new_category()
-            update_bank_data()
+            request_new_category()  <----------------------------need to write these two
         bank_name = "finished Capital One"
 
 
@@ -336,4 +336,5 @@ while bank_choice != str(0):
 #category_file = "f:\Libraries-System-Win10\Desktop\category_file.xlsx"
 
 #bank_file.read_excel_and_populate_dictionary()
+
 
