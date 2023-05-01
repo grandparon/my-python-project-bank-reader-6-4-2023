@@ -14,7 +14,7 @@ bank_data = {}
 #category_sums = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 category_sums_dict = {'0':[0],'1':[0],'2':[0], '3':[0],'4':[0],'5':[0],'6':[0],'7':[0],'8':[0],'9':[0],'10':[0],'11':[0],'12':[0],'13':[0],'14':[0],'15':[0],'16':[0],'17':[0]}
-sums_info_dict = {"date":"str_date", "bank":"bank_name_str"}
+sums_info_dict = {"date":"str_date"}
 pass
 save_file = ("c:\python-write-data\saved_bank_data.xlsx")
 statement_directory = "f:Libraries-System-Win10/Downloads"
@@ -236,10 +236,6 @@ class Add_categories:
             exit()
         elif cat_num == 23:
             print ("SAVE and EXIT after this entry")
-#            s = Merge_and_save(save_file, sbf_dict)
-#            s.merge_data()
-#            s.save()
-#           exit()
             return (23, True)
 
 
@@ -335,7 +331,6 @@ class Merge_and_save:
             else:
                 temp_cat_sums_from_file = category_sums_dict
         sums_info_dict["date"] = date.today()
- #       sums_info_dict["bank_name_str"]  = bank_name_dict[bank_num]
         sums_info_dict["Bank"] = bank_name
         pass
         #--------
