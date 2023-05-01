@@ -356,10 +356,7 @@ class Merge_and_save:
                 df_from_bank_data.T.to_excel(writer, sheet_name="Sheet1")
                 df_from_cat_sums.to_excel(writer, sheet_name="category sums")
 
-    #------ add the new sums dict as a new row in excel ----
-#        df4 = pd.read_excel(save_file, sheet_name="category sums")
-#        df_concat = pd.concat([df4, df2], ignore_index= True)
-#       df_concat.to_excelv(save_file, sheet_name = "category sums", index=False,)
+
 
 
 
