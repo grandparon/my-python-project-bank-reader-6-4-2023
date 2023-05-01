@@ -13,7 +13,8 @@
 bank_data = {}
 #category_sums = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-category_sums_dict = {'0':[0],'1':[0],'2':[0], '3':[0],'4':[0],'5':[0],'6':[0],'7':[0],'8':[0],'9':[0],'10':[0],'11':[0],'12':[0],'13':[0],'14':[0],'15':[0],'16':[0],'17':[0]}
+#category_sums_dict = {'0':[0],'1':[0],'2':[0], '3':[0],'4':[0],'5':[0],'6':[0],'7':[0],'8':[0],'9':[0],'10':[0],'11':[0],'12':[0],'13':[0],'14':[0],'15':[0],'16':[0],'17':[0]}
+category_sums_dict = {1:[0],2:[0], 3:[0],4:[0],5:[0],6:[0],7:[0],8:[0],9:[0],10:[0],11:[0],12:[0],13:[0],14:[0],15:[0],16:[0],17:[0]}
 sums_info_dict = {"date":"str_date"}
 pass
 save_file = ("c:\python-write-data\saved_bank_data.xlsx")
@@ -318,13 +319,10 @@ class Merge_and_save:
         bank_data.update(sbf_dict)
         pass
 
-    def merge_sums_dicts(self):
-
-        category_sums_dict.update(sums_info_dict)
-
     def save (self):
         with pd.ExcelFile(save_file) as xls:
             if "category sums" in xls.sheet_names:
+                pass
                 df = pd.read_excel(xls, "category sums")
                 temp_cat_sums_from_file = df.to_dict('list')
                 pass
@@ -584,7 +582,7 @@ while bank_choice !=  "NONE" :
             total_debit += debit
             total_deposit += deposit
 #            category_sums[cat_num] += debit
-            category_sums_dict[str(cat_num)][0] += debit
+            category_sums_dict[cat_num][0] += debit
             pass
         elif (exists_in_a_dictonary_or_not == "EXISTING ENTRY" and t_or_f_is_it_special != True):
             pass
