@@ -14,7 +14,7 @@ bank_data = {}
 #category_sums = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 #category_sums_dict = {'0':[0],'1':[0],'2':[0], '3':[0],'4':[0],'5':[0],'6':[0],'7':[0],'8':[0],'9':[0],'10':[0],'11':[0],'12':[0],'13':[0],'14':[0],'15':[0],'16':[0],'17':[0]}
-category_sums_dict = {1:[0],2:[0], 3:[0],4:[0],5:[0],6:[0],7:[0],8:[0],9:[0],10:[0],11:[0],12:[0],13:[0],14:[0],15:[0],16:[0],17:[0]}
+category_sums_dict = {2:[0],1:[0], 3:[0],4:[0],5:[0],6:[0],7:[0],8:[0],9:[0],10:[0],11:[0],12:[0],13:[0],14:[0],15:[0],16:[0],17:[0]}
 sums_info_dict = {"date":"str_date"}
 pass
 save_file = ("c:\python-write-data\saved_bank_data.xlsx")
@@ -328,6 +328,7 @@ class Merge_and_save:
                 pass
             else:
                 temp_cat_sums_from_file = category_sums_dict
+                pass
         sums_info_dict["date"] = date.today()
         sums_info_dict["Bank"] = bank_name
         pass
@@ -335,6 +336,7 @@ class Merge_and_save:
         xl_lengths  = Bank.get_sheet_length(save_file, "category sums")
         category_sums_dict.update(sums_info_dict)
         df_from_bank_data = pd.DataFrame.from_dict (bank_data)
+        #--------combine old sums with new --
         df_from_cat_sums = pd.DataFrame.from_dict (category_sums_dict)
         df_from_saved_file = pd.DataFrame.from_dict (temp_cat_sums_from_file)
         excel_pandas_file = pd.ExcelFile(save_file)
@@ -343,11 +345,11 @@ class Merge_and_save:
             if "category sums" in excel_pandas_file.sheet_names:
                 df_from_bank_data.T.to_excel(writer)
                 df_from_cat_sums.to_excel(writer, sheet_name="category sums", startrow=0, index=False)
-                df_from_saved_file.to_excel(writer, sheet_name="category sums", startrow=2, index=False)
+                df_from_saved_file.to_excel(writer, sheet_name="category sums", startrow=2, index=None, header=False)
             else:
 #                with pd.ExcelWriter(save_file) as writer:
                 df_from_bank_data.T.to_excel(writer, sheet_name="Sheet1")
-                df_from_cat_sums.to_excel(writer, sheet_name="category sums")
+                df_from_cat_sums.to_excel(writer, sheet_name="category sums", startrow=0, startcol=0, index=0)
 
 
 
