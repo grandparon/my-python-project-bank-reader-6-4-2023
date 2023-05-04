@@ -13,11 +13,12 @@
 bank_data = {}
 #category_sums = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-#category_sums_dict = {'0':[0],'1':[0],'2':[0], '3':[0],'4':[0],'5':[0],'6':[0],'7':[0],'8':[0],'9':[0],'10':[0],'11':[0],'12':[0],'13':[0],'14':[0],'15':[0],'16':[0],'17':[0]}
-category_sums_dict = {2:[0],1:[0], 3:[0],4:[0],5:[0],6:[0],7:[0],8:[0],9:[0],10:[0],11:[0],12:[0],13:[0],14:[0],15:[0],16:[0],17:[0]}
+#category_sums_dict = {'boat':[0],'fuck':[0],'you':[0]}
+# '4':[0],'5':[0],'6':[0],'7':[0],'8':[0],'9':[0],'10':[0],'11':[0],'12':[0],'13':[0],'14':[0],'15':[0],'16':[0],'17':[0]}
+#category_sums_dict = {2:[0],1:[0], 3:[0],4:[0],5:[0],6:[0],7:[0],8:[0],9:[0],10:[0],11:[0],12:[0],13:[0],14:[0],15:[0],16:[0],17:[0]}
 sums_info_dict = {"date":"str_date"}
 pass
-save_file = ("c:\python-write-data\saved_bank_data.xlsx")
+save_file = "c:\python-write-data\saved_bank_data.xlsx"
 statement_directory = "f:Libraries-System-Win10/Downloads"
 sbf_dict = {}
 # order below is --->  "NV",   capital one , 1st Tech, US Bank
@@ -46,10 +47,10 @@ us_bank_regex = "nop"
 regex_list = "yuo"
 bank_dictionary = {}
 bank_name_dict = { 0: "EXIT", 1: "CAPITAL_ONE", 2: "FIRST_TECH", 3: "US_BANK"}
-category_dict = {1:"Boat", 2: "Food", 3:"Dining", 4: "House", 5:"Travel", 6:"Utilities", 7:"Auto", 8:"Health",
-                 9:"Deductable", 10: "Recreation", 11: "Unknown", 12: "Pay Credit Card", 13: "Deposits to USB",
-                 14:"Money Transfers", 15: "Interest", 16:"Trivials",17: "Taxes", 20: "Print bank_data", 21: "Print Sums",
-                 22: "Quit but don't Save", 23: "Save and Quit"}
+category_dict = {1:["Boat",0], 2: ["Food",0], 3:["Dining",0], 4: ["House",0], 5:["Travel",0], 6:["Utilities",0], 7:["Auto",0], 8:["Health",0],
+                 9:["Deductable",0], 10: ["Recreation",0], 11: ["Unknown",0], 12: ["Pay Credit Card",0], 13: ["Deposits to USB",0],
+                 14:["Money Transfers",0], 15: ["Interest",0], 16:["Trivials",0],17: ["Taxes",0], 20: ["Print bank_data",0], 21: ["Print Sums",0],
+                 22: ["Quit but don't Save",0], 23: ["Save and Quit",0]}
 
 def month_intro():
     mw = input ("use month number")
@@ -324,34 +325,34 @@ class Merge_and_save:
             if "category sums" in xls.sheet_names:
                 pass
                 df = pd.read_excel(xls, "category sums")
-                temp_cat_sums_from_file = df.to_dict('list')
+                temp_sums_from_saved = df.to_dict('list')
+                for key in temp_sums_from_saved:
+                    del temp_sums_from_saved [key][0]
+                    pass
                 pass
             else:
-                temp_cat_sums_from_file = category_sums_dict
+                temp_sums_from_saved = category_dict
                 pass
-        sums_info_dict["date"] = date.today()
-        sums_info_dict["Bank"] = bank_name
+        sums_info_dict["date"] = [date.today(),0]
+        sums_info_dict["Bank"] = [bank_name,0]
         pass
         #--------
         xl_lengths  = Bank.get_sheet_length(save_file, "category sums")
-        category_sums_dict.update(sums_info_dict)
+        category_dict.update(sums_info_dict)
         df_from_bank_data = pd.DataFrame.from_dict (bank_data)
         #--------combine old sums with new --
-        df_from_cat_sums = pd.DataFrame.from_dict (category_sums_dict)
-        df_from_saved_file = pd.DataFrame.from_dict (temp_cat_sums_from_file)
+        df_from_cat_sums = pd.DataFrame.from_dict (category_dict)
+        df_from_saved_file = pd.DataFrame.from_dict (temp_sums_from_saved)
         excel_pandas_file = pd.ExcelFile(save_file)
         with pd.ExcelWriter(save_file) as writer:
- #           df_from_bank_data.T.to_excel(writer, sheet_name="Sheet1")
             if "category sums" in excel_pandas_file.sheet_names:
                 df_from_bank_data.T.to_excel(writer)
-                df_from_cat_sums.to_excel(writer, sheet_name="category sums", startrow=0, index=False)
+                df_from_cat_sums.to_excel(writer, sheet_name="category sums", startrow=0, index=False, header=False)
                 df_from_saved_file.to_excel(writer, sheet_name="category sums", startrow=2, index=None, header=False)
+                pass
             else:
-#                with pd.ExcelWriter(save_file) as writer:
                 df_from_bank_data.T.to_excel(writer, sheet_name="Sheet1")
                 df_from_cat_sums.to_excel(writer, sheet_name="category sums", startrow=0, startcol=0, index=0)
-
-
 
 
 
@@ -584,7 +585,7 @@ while bank_choice !=  "NONE" :
             total_debit += debit
             total_deposit += deposit
 #            category_sums[cat_num] += debit
-            category_sums_dict[cat_num][0] += debit
+            category_dict[int(cat_num)][1] += debit
             pass
         elif (exists_in_a_dictonary_or_not == "EXISTING ENTRY" and t_or_f_is_it_special != True):
             pass
