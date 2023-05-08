@@ -4,20 +4,20 @@
 # revision 2.0 3/21 Added SBF (Standard Banking Format) and removed redundent sections of main for each bank
 
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 #*****************************************************************************
 # **************************** GLOBAL VARIABLE DECLARATIONS  *****************
 #*****************************************************************************
-
+magic_number_quit_and_dont_save= int(20)
+magic_number_quit_and_save= int(21)
 bank_data = {}
-
+row_count = 0
+statement_rows_remaining = 0
 sums_info_dict = {"date":"str_date"}
 pass
 save_file = "c:\python-write-data\saved_bank_data.xlsx"
 statement_directory = "f:Libraries-System-Win10/Downloads"
 sbf_dict = {}
-# order below is --->  "NV",   capital one , 1st Tech, US Bank
+
 statement_headings_dict = {"STORE": ["NV",3,7,2], "AMOUNT": ["NV",5,4,4], "DATE": ["NV",1,2,0], "CATEGORY": ["NV",4, 8, 1],"PAYMENT": ["NV",6, 6, 6]}
 bank_file_name_dict = {"CAPITAL_ONE":"transaction_download." ,"US_BANK":"Checking" ,"FIRST_TECH": "ExportedTransactions"}
 sbf_headings_dict = {"BANK NAME": 0, "DATE": 1, "AMOUNT": 2, "CATEGORY":4}
@@ -37,6 +37,7 @@ import numbers
 from enum import Enum
 import datetime as dt
 from datetime import date
+import sys
 
 
 us_bank_regex = "nop"
@@ -48,10 +49,11 @@ bank_name_dict = { 0: "EXIT", 1: "CAPITAL_ONE", 2: "FIRST_TECH", 3: "US_BANK"}
 #                 14:["Money Transfers",0], 15: ["Interest",0], 16:["Trivials",0],17: ["Taxes",0], 18: ["Date", "STR"], 19: ["Bank", "STR"], 20: ["Print bank_data",0], 21: ["Print Sums",0],
 #                 22: ["Quit but don't Save",0], 23: ["Save and Quit",0]}
 
-#category_dict = {0:["Boat",0], 1: ["Food",0], 2:["Dining",0], 3: ["House",0], 4:["Travel",0]}
-category_dict_2 = {"Boat": [ 0], "Food":[ 0], "Dining": [ 0], "House": [0], "Travel": [0], "Utilities":[0], "Auto": [0],
-                   "Health":[0], "Deductable":[0], "Recreation":[0], "Unknown": [0], "Pay Credit Card": [0],
-                   "Deposits to US Bank": [0], "Money Transfers":[0] }
+category_dict_2 = {"Auto": [0], "Boat": [ 0], "Credit Card Payment": [0],"Deductable":[0],"Deposits to US Bank": [0],
+                   "Dining": [ 0], "Food":[ 0],
+                   "Health":[0], "House": [0], "Interest":[0],"Money Transfers":[0],"Travel": [0],
+                    "Utilities":[0],"Recreation":[0],"Taxes" :[0],"Trivaials":[0],
+                    "Unknown": [0],"Blank1":[0], "Blank2":[0], "Quit- Don't Save":[0],"Quit and Save":[0]}
 def month_intro():
     mw = input ("use  statement month (number)\n")
     if 1 <= int(mw) <= 12:
@@ -75,11 +77,9 @@ def intro():
 
 def  get_key_by_value(val):
     keys_list = get_list_of_category_keys()
-#   for key, value in category_dict_2.items():
     cat_key = keys_list[val-1]
-#        if val == value[0]:
     return cat_key
-#        return "value doesn't exist"
+
 def get_list_of_category_keys():
     cat_key_list = list(category_dict_2.keys())
     return (cat_key_list)
@@ -117,9 +117,6 @@ class SBF:
     def __init__(self):
         pass
 
-class Pivot:
-    pass
- #   def __init__(self, wb, ws, bank_data):
 class Bank:
     def __init__(self, bank_name:str, bank_num:int, bank_file_name:str, month:float,
     download_directory:str):
@@ -131,12 +128,9 @@ class Bank:
     pass
 
     def csv_to_xl(self):
-        # (self.bank_file_name in file_name)
-        #    file_is = "2023-01-30_transaction_download.csv"
 
         for file_name in os.listdir(self.download_directory):
             if file_name.endswith(".csv") and (self.bank_file_name in file_name) == True :
-#                list_of_bank_files.append(file_name)
                 a_csv_file = statement_directory + '/' + file_name
                 wb = openpyxl.Workbook()
                 ws = wb.active
@@ -151,16 +145,13 @@ class Bank:
     def get_wb_and_ws (self):
         list_of_bank_files = []
         pass
-#        print (f" bank file name is: {self.bank_file_name} bank name is: {self.bank_name}")
         for file_name in os.listdir(self.download_directory):
             if file_name.endswith(".xlsx") and (self.bank_file_name in file_name) == True :
                 list_of_bank_files.append(file_name)
-#                print(f' file to open:{self.download_directory + "/" + file_name}')
                 wb = openpyxl.load_workbook(self.download_directory + "/" + file_name )
                 ws = wb.active
                 if bank_name == "FIRST_TECH":
                     cell_date = ws['B3'].value
-#                    cell_month = int(cell_date.strftime("%m"))
                     cell_split_date = cell_date.split('/')
                     cell_month = int(cell_split_date[0])
                 else:
@@ -187,7 +178,6 @@ class Bank:
             if os.path.isfile(a_bank_file_name):
                 dataframe1 = pd.read_excel(a_bank_file_name)
                 pandas_num_rows = dataframe1.shape[0]
-        #       print (f"pandas num rows:{num_rows}")
                 return (ws.min_row,  ws.max_row, ws.min_column,  ws.max_column, pandas_num_rows)
             else:
                 print(f" could not find {a_bank_file_name}")
@@ -204,17 +194,21 @@ class Add_categories:
     def get_category(self):
         sc = 0
         nc2 = 0
-
-        c = input ("pick a number")
+        c = input ()
+        pass
         if 0 <= int(c) < 20:
-
             return int(c), int(0)
-        if (20 < int(c) <=30):
-            print (f" ok special but lets finish this statement row first")
-            nc2 = input("pick a number for category")
-
-
-            return int(nc2), int(c)
+        if (20 <= int(c) <=30):
+            pass
+            if int(c) == magic_number_quit_and_dont_save:
+#                print ("-------------")
+#                print (" Did Not Save")
+#                print("-------------")
+                return int(c), int(c)
+            elif int(c)  == magic_number_quit_and_save:
+                print(f"ok special but finish this statement row first")
+                nc2 = input("pick a number for this last category")  #finish the last category before exiting
+                return int(nc2), int(c)
         else:
             print ("NOT A VALID CATEGORY NUMBER")
             return int(-1), int(-1)
@@ -229,21 +223,21 @@ class Add_categories:
     def parse_cat_nums_and_non_standard_exit_programs(self):
         if 0 < cat_num < 20:
             return ( False, False)
-        if cat_num == 20:
-            print ("PRINTING BANK_DATA then continue")
-            self.print_json()
-            return (20, True)
-        elif cat_num == 21:
-            print ("PRINTING CATEGORY SUMS then continue")
-            ms = Master_sum(0,0,0)
-            ms.print_cat_sums()
-            return (21, True)
-        elif cat_num == 22:
+ #       if cat_num == 20:
+ #           print ("PRINTING BANK_DATA then continue")
+ #           self.print_json()
+ #           return (20, True)
+ #       elif cat_num == 21:
+ #           print ("PRINTING CATEGORY SUMS then continue")
+ #           ms = Master_sum(0,0,0)
+ #           ms.print_cat_sums()
+ #           return (21, True)
+        elif cat_num == magic_number_quit_and_dont_save:
             print ("EXITING without saving session")
             exit()
-        elif cat_num == 23:
+        elif cat_num == magic_number_quit_and_save:
             print ("SAVE and EXIT after this entry")
-            return (23, True)
+            return (magic_number_quit_and_save, True)
 
 
     def add_new_cat_to_sbf_dict(self, cat_num, new_sbf_dict, cat_num_text_str):
@@ -272,21 +266,12 @@ class Master_sum:
         pass
         amount_to_add = sbf_dict[a_new_sbf_dict_key][sbf_headings_dict["AMOUNT"]]
         if amount_to_add >= 0:
-            total_deposits = amount_to_add;
+            total_deposits = amount_to_add
             return ( 0, total_deposits,self.cat_num)  #return (deposits, abs(debits) )
         elif amount_to_add < 0:
-            #amount = abs(amount_to_add)
             amount = round(float(amount_to_add),2)
             pass
             return ( amount, 0, self.cat_num)
-
-
-
-
-#int(round(float(amount_to_add))))
-
-
-
 
     def print_cat_sums (self):
         i=0
@@ -307,9 +292,7 @@ class Summaries():
                 one_key = x[q]
 
             bank_sum = bank_sum + one_key
- #           print(f"amount is: {sum}")
 
-#called from line 93
 class Merge_and_save:
     def __init__(self, save_file, sbf_dict):
         pass
@@ -353,7 +336,6 @@ class Merge_and_save:
             pass
         else:
             df_either = df_11
-#            df_either.update(df_date)
             pass
 
         pass
@@ -384,8 +366,7 @@ class New_statement_row:
 #----------------------------------------------------------------------------------------------------
 #    SBF definition : Bank_Instition   Transaction_date   Statement_month   Store   Amount  Category
 # --------------------------
-# Copies the new statement row to RAM (so CATEGORY can be added)
-#----------------------------------------------------------------------------------------------------
+
 
 #SBF is:
     def new_sbf_dict(self):
@@ -397,17 +378,8 @@ class New_statement_row:
                                                                             "RESERVED FOR ASSIGNED CATEGORY NUMBER",
                                                                             month_wanted,
                                                                             new_row[statement_headings_dict["PAYMENT"][bank_num]],
-#                                                                            new_row[statement_headings_dict["CREDIT"][bank_num]] ,
                                                                             "RESERVED", "RESERVED", "RESERVED"]
- #       if bank_name == "CAPITAL ONE":
- #           modified_credit = sbf_dict[statement_headings_dict["CREDIT"][bank_name]]
- #           modified_debit = sbf_dic[statement_headings_dict["CREDIT"][bank_name]]
 
- #   def copy_sbf_row_to_sbf_dict(self, sbf_row):
- #       print (f"THIS is sbf_row {sbf_row}  <- in copy_sbf_row...")
-#        sbf_dict[sbf_row[Sbf.COMPANY.value]] = [  "KEY", sbf_row[Sbf.BANK_NAME.value], sbf_row[Sbf.TRANSACTION_DATE.value], sbf_row[Sbf.AMOUNT.value],
-#                                                  new_cat,    sbf_row[Sbf.STATEMENT_MONTH.value], "EXTRA"]
-#        pass
         return (new_row [statement_headings_dict["STORE"][bank_num]])
 
     def is_statement_row_in_bd_and_not_in_saved_xl(self, new_statement_key):
@@ -426,7 +398,6 @@ class New_statement_row:
             exit("NO")
             pass
         if new_statement_key in bank_data:
-            print (f"found {new_statement_key} in bank_data")
             if new_statement_key in temp_saved_file:
                 found_one = True
             else:
@@ -459,38 +430,22 @@ class New_statement_row:
             else:
                 pass
         return "NEW ENTRY", new_statement_key, new_statement_amount, new_statement_date, "NO CATEGORY UNTIL PICKED"
-#            return "NEW ENTRY"
 
     def  update_amounts(self, latest_sbf_dict, new_amount_to_check):
         pass
         new_amount_to_check = int(round(float(new_amount_to_check),2))
         print(f" ==>>> check to see amounts are different  {new_amount_to_check} vs. {latest_sbf_dict[Sbf_enum.AMOUNT.value]}<<=\n")
         if latest_sbf_dict[Sbf_enum.AMOUNT.value] != new_amount_to_check:
-#            print (f" ======>>> found amounts to be different and will update {new_amount_to_check}  vs.  {latest_sbf_dict[Sbf_enum.AMOUNT.value]}<<==")
             latest_sbf_dict[Sbf_enum.AMOUNT.value] = new_amount_to_check
             pass
-#       sbf_dict[statement_headings_dict["AMOUNT"][bank_num]] += sbf_dict[statement_headings_dict["AMOUNT"][bank_num]]
 
         return
 
 
-#*********************************************************
-#category Sum
-#*********************************************************
 
-#*******************************************
-# Statement headings for each bank
-#*******************************************
-#excel_credit_card_headings = {"transaction_date": 1, "card_number": 2, "description":3, "category": 4, "debit": 5, "credit":6}
-#excel_first_tech_headings = {"transaction_date": 2, "card_number": "n/a", "check_number": 5, "type":9, "description":7, "category": 8, "debit": 4, "credit":"n/a, "}
-#excel_us_bank_headings = {"transaction_date":0, "type":1, "description" : 2, "download": 3, "debit" : 4, "credit" : 5}
-
-#in dict {key: [CAPITAL ONE, FIRST TECH, US BANK]}
-
-#banks = ["capital_one", "first_tech"," US_bank"]
 
 bank_choice = "9"
-bank_name = "none picked yet"
+#bank_name = "none picked yet"
 total = 0
 special_cat_num = 0
 
@@ -525,8 +480,6 @@ else:  #create one
     pass
 pass
 
-
-
 while bank_choice !=  "NONE" :
     pass
     total_debit = 0
@@ -542,24 +495,25 @@ while bank_choice !=  "NONE" :
     ws = y[2]   #work sheet
     wb = y[1]   #work book
     bank_file_name = y[0]
-#    df_sheet_dict = pd.read_excel(bank_file_name, sheet_name=None)
-#    df = pd.concat(df_sheet_dict.values(), ignore_index=True)#file name
+
     size = Bank.get_statement_length(bank_file_name)
-    print (f"Pandas size: {size[4] + 1} ")
+    starting_row_count = size[4]-1
+    print (f"Pandas size at start: {size[4] + 1} ")
     key_1 = get_key_by_value(3)
-    print (f"KEY: {key_1}")
+#    print (f"KEY: {key_1}")
     new_amount = 0
     print (f"number of rows in statement is :{size[1]}")
 #    print (type(category_sums))
 #    print (category_sums)
     for tupple_new_row in ws.iter_rows(min_row=2, max_row=size[4]+1, min_col=0, max_col=9, values_only = True):
+        statement_rows_remaining += 1
+        print(f"statement rows remaining: { starting_row_count - statement_rows_remaining - row_count }")
         new_row = list(tupple_new_row)
         if bank_name == "CAPITAL_ONE":
             if new_row[statement_headings_dict['AMOUNT'][bank_num]] == None:
                 new_row[statement_headings_dict['AMOUNT'][bank_num]] =round(float(new_row[statement_headings_dict['PAYMENT'][bank_num]]),2)
             else:
                 new_row[statement_headings_dict['AMOUNT'][bank_num]] = round(float ((new_row[statement_headings_dict['AMOUNT'][bank_num]])),2) * -1.00
-
         pass
         a_new_statement_row = New_statement_row( new_row, bank_name, bank_num)
  #       print (f"new_row->key is:{new_row}\n")
@@ -568,7 +522,8 @@ while bank_choice !=  "NONE" :
         if (exists_in_a_dictonary_or_not == "BANK_DATA EXACTLY SAME AS NEW STATEMENT"):
             continue
         if (exists_in_a_dictonary_or_not == "EXISTS IN BANK_DATA" ):
-            print (f"{the_statement_key} of ${the_statement_amount} Is already in bank_data with category {category_from_bank_data}")
+#           print (f"{the_statement_key} of ${the_statement_amount} Is already in bank_data with category {category_from_bank_data}")
+            row_count += 1
             if the_statement_amount > 0:
                 pass
                 credit = the_statement_amount
@@ -586,11 +541,14 @@ while bank_choice !=  "NONE" :
         if  exists_in_a_dictonary_or_not == "NEW ENTRY":
             a_new_sbf_dict_key = a_new_statement_row.new_sbf_dict()
             new_cat_inst = Add_categories()
-            print (f"\nCategory for:{list(sbf_dict.keys())[-1]} in {bank_name_dict[bank_num]} for $ {new_row[statement_headings_dict['AMOUNT'][bank_num]]}\n")
+            print (f"\nNeed category for:{list(sbf_dict.keys())[-1]} in {bank_name_dict[bank_num]} for $ {new_row[statement_headings_dict['AMOUNT'][bank_num]]}")
             new_cat_inst.print_category_menu()
-            cat_num, special_cat_num = new_cat_inst.get_category()
-            cat_str = get_key_by_value(cat_num)
-            cat_num_text_str = category_dict_2[cat_str]
+            cat_num, special_cat_num = new_cat_inst.get_category()  #return the normat category number and special (btween 20 and 300
+            if special_cat_num == magic_number_quit_and_dont_save:
+                print("==== not saving ==")
+                sys.exit()
+            cat_str_2 = get_key_by_value(cat_num)
+            cat_num_text_str = category_dict_2[cat_str_2]
             cat_sums = Master_sum(new_amount,cat_num,sbf_dict)
             debit, deposit, category = cat_sums.fix_new_amount_signs(a_new_sbf_dict_key)
             new_cat_inst.add_new_cat_to_sbf_dict(cat_num, sbf_dict, cat_num_text_str)
@@ -613,36 +571,17 @@ while bank_choice !=  "NONE" :
     s = Merge_and_save(save_file, sbf_dict)
     s.merge_data()
     s.save()  # line 145
+    print ("Saved")
     wb.close()
 
 
-    if special_cat_num == int(23):
+    if special_cat_num == magic_number_quit_and_save:
         exit()
         sys.exit()
-
+    print ("Reached end of Statement")
     print("SAVED")
-  #  close()
-
-    more_stuff = input ("Hey buddy, do you want to do anthing else?\n yes or no:\n")
-    accepted_strings = {'y', 'yes', 'Yes', 'YES'}
-    if more_stuff in accepted_strings:
-        more_input = input ("Guess a number i.e 3  ro 2")
-        if int(more_input) == 2:
-            print ("PRINTING BANK_DATA then continue")
-            pass
-            print(json.dumps(bank_data, indent=4))
-            continue
-        elif int(more_input) == 3:
-            print ("PRINTING CATEGORY SUMS then continue")
-            ms = Master_sum(0,0,0,0)
-            ms.print_cat_sums()
-            continue
-        else:
-            print ("you fucked up the number you entered")
-        input ("print db or category sums or total debit and total income")
     print("CLOSED")
 
-    bank_choice = Bank_Names.NONE.value
     exit()
 
 
