@@ -9,13 +9,9 @@
 #*****************************************************************************
 # **************************** GLOBAL VARIABLE DECLARATIONS  *****************
 #*****************************************************************************
-#bank_data = {"Beginning Key":[0,0,0,0,0,0,0,0,0]}
-bank_data = {}
-#category_sums = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-#category_sums_dict = {'boat':[0],'fuck':[0],'you':[0]}
-# '4':[0],'5':[0],'6':[0],'7':[0],'8':[0],'9':[0],'10':[0],'11':[0],'12':[0],'13':[0],'14':[0],'15':[0],'16':[0],'17':[0]}
-#category_sums_dict = {2:[0],1:[0], 3:[0],4:[0],5:[0],6:[0],7:[0],8:[0],9:[0],10:[0],11:[0],12:[0],13:[0],14:[0],15:[0],16:[0],17:[0]}
+bank_data = {}
+
 sums_info_dict = {"date":"str_date"}
 pass
 save_file = "c:\python-write-data\saved_bank_data.xlsx"
@@ -54,9 +50,10 @@ bank_name_dict = { 0: "EXIT", 1: "CAPITAL_ONE", 2: "FIRST_TECH", 3: "US_BANK"}
 
 #category_dict = {0:["Boat",0], 1: ["Food",0], 2:["Dining",0], 3: ["House",0], 4:["Travel",0]}
 category_dict_2 = {"Boat": [ 0], "Food":[ 0], "Dining": [ 0], "House": [0], "Travel": [0], "Utilities":[0], "Auto": [0],
-                   "Health":[0] }
+                   "Health":[0], "Deductable":[0], "Recreation":[0], "Unknown": [0], "Pay Credit Card": [0],
+                   "Deposits to US Bank": [0], "Money Transfers":[0] }
 def month_intro():
-    mw = input ("use month number")
+    mw = input ("use  statement month (number)\n")
     if 1 <= int(mw) <= 12:
         return (int(mw))
     else:
@@ -69,10 +66,10 @@ def intro():
     print ("4 for a sum of costs")
     print ("0 for exit")
     selection = input("select one\n")
-    if (int(selection) >= 0 and int(selection) < 4 ):
+    if (int(selection) > 0 and int(selection) < 4 ):
         return (int(selection), bank_name_dict[int(selection)])
     else:
-        return ("NONE" "NONE")
+        exit()
 
 
 
