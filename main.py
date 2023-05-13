@@ -37,11 +37,13 @@ import numbers
 from enum import Enum
 import datetime as dt
 from datetime import date
+import calendar
 import sys
+import re
 
 
 us_bank_regex = "nop"
-regex_list = "yuo"
+
 bank_dictionary = {}
 bank_name_dict = { 0: "EXIT", 1: "CAPITAL_ONE", 2: "FIRST_TECH", 3: "US_BANK"}
 #category_dict = {1:["Boat",0], 2: ["Food",0], 3:["Dining",0], 4: ["House",0], 5:["Travel",0], 6:["Utilities",0], 7:["Auto",0], 8:["Health",0],
@@ -49,13 +51,36 @@ bank_name_dict = { 0: "EXIT", 1: "CAPITAL_ONE", 2: "FIRST_TECH", 3: "US_BANK"}
 #                 14:["Money Transfers",0], 15: ["Interest",0], 16:["Trivials",0],17: ["Taxes",0], 18: ["Date", "STR"], 19: ["Bank", "STR"], 20: ["Print bank_data",0], 21: ["Print Sums",0],
 #                 22: ["Quit but don't Save",0], 23: ["Save and Quit",0]}
 
-category_dict_2 = {"Auto": [0], "Boat": [ 0], "Credit Card Payment": [0],"Deductable":[0],"Deposits to US Bank": [0],
-                   "Dining": [ 0], "Food":[ 0],
-                   "Health":[0], "House": [0], "Interest":[0],"Money Transfers":[0],"Travel": [0],
-                    "Utilities":[0],"Recreation":[0],"Taxes" :[0],"Trivaials":[0],
-                    "Unknown": [0],"Blank1":[0], "Blank2":[0], "Quit- Don't Save":[0],"Quit and Save":[0]}
+
+category_dict_2 = {"[A]uto": [0],
+                   "[B]oat": [0],
+                   "[C]redit Card Payment": [0],
+                   "[D]eposits to US Bank": [0],
+                   "[E]verything":[0],
+                   "[F]ood and resturents": [0],
+                    "[G]iving":[0],
+                   "[H]ealth":[0],
+                   "[I]nterest": [0],
+                   "[J]unk": [0],
+                    "[M]oney transfers":[0],
+                    "[O]ur House": [0],
+                    "[Q]uit and Save":[0],
+                    "[R]ecreation":[0],
+                    "[S]mall stuff":[0],
+                    "[T]ravel": [0],
+
+                   "[U]tilities":[0],
+                   "Ta[x]es": [0],
+                    "[Y]Unknown": [0],
+                   "Quit[z]- Don't Save": [0],
+                   "Blank1":[0],
+                   "Blank2":[0]
+                  }
 def month_intro():
-    mw = input ("use  statement month (number)\n")
+    print ("statement for what month?")
+    for i in range(1, 12):
+        print(f"{i}: {calendar.month_name[i]}")
+    mw = input ("\n")
     if 1 <= int(mw) <= 12:
         return (int(mw))
     else:
@@ -67,7 +92,8 @@ def intro():
     print ("3 for US Bank")
     print ("4 for a sum of costs")
     print ("0 for exit")
-    selection = input("select one\n")
+    selection = input("select bank\n")
+
     if (int(selection) > 0 and int(selection) < 4 ):
         return (int(selection), bank_name_dict[int(selection)])
     else:
@@ -191,20 +217,43 @@ class Bank:
 
 
 class Add_categories:
-    def get_category(self):
-        sc = 0
-        nc2 = 0
-        c = input ()
-        pass
-        if 0 <= int(c) < 20:
-            return int(c), int(0)
-        if (20 <= int(c) <=30):
+
+    def input_and_parse_category():
+        c = -1
+        my_set = []
+        txt = list(category_dict_2.keys())
+        length = len(txt)
+        while c == -1:
+            c = input()
+            if c.isnumeric():
+                if 1 < c < length:
+                    return (c)
             pass
-            if int(c) == magic_number_quit_and_dont_save:
-#                print ("-------------")
-#                print (" Did Not Save")
-#                print("-------------")
-                return int(c), int(c)
+            i=1
+            for item in txt:
+                if re.search(c.upper(),item):
+                    print (f' match is : {item}')
+                    pass
+                    return (i)
+                i+= 1
+            pass
+
+
+
+
+ #           for c in [1,"a", "A"]: return(1)
+ #           for c in [2,"b", "B"]: return(2)
+ #           for c in [3,"b","B"]: return (3)
+    def get_category(self):
+        b = Add_categories.input_and_parse_category()
+
+        c = b
+        if 0 <= c < 20:
+            return int(c), int(0)
+        if (20 <= c <=30):
+            pass
+            if c == magic_number_quit_and_dont_save:
+                return c, c
             elif int(c)  == magic_number_quit_and_save:
                 print(f"ok special but finish this statement row first")
                 nc2 = input("pick a number for this last category")  #finish the last category before exiting
@@ -216,7 +265,8 @@ class Add_categories:
 
     def print_category_menu(self):
         i=1
-        key_list = get_list_of_category_keys()
+#        key_list = get_list_of_category_keys()
+
         for key, value in category_dict_2.items():
             print(f'{i}  {key} {value}')
             i = i + 1
@@ -260,7 +310,6 @@ class Master_sum:
         self.new_amount = new_amount
         self.cat_num = cat_num
         self.sbf_dict = sbf_dict
-
     pass
     def fix_new_amount_signs (self, a_new_sbf_dict_key):
         pass
@@ -311,6 +360,7 @@ class Merge_and_save:
         today = date.today()
         td = today.strftime("%d/%m/%y")
         date_dict = {"Bank": [bank_name], "Date": [str(td)]}
+
 
         df_date = pd.DataFrame(date_dict)
         with pd.ExcelFile(save_file) as xls:
@@ -543,7 +593,9 @@ while bank_choice !=  "NONE" :
             new_cat_inst = Add_categories()
             print (f"\nNeed category for:{list(sbf_dict.keys())[-1]} in {bank_name_dict[bank_num]} for $ {new_row[statement_headings_dict['AMOUNT'][bank_num]]}")
             new_cat_inst.print_category_menu()
-            cat_num, special_cat_num = new_cat_inst.get_category()  #return the normat category number and special (btween 20 and 300
+            cat_num, special_cat_num = new_cat_inst.get_category()  #return the normal category number and special (btween 20 and 30
+            if cat_num == -1:
+                break
             if special_cat_num == magic_number_quit_and_dont_save:
                 print("==== not saving ==")
                 sys.exit()
@@ -557,6 +609,7 @@ while bank_choice !=  "NONE" :
 #            category_sums[cat_num] += debit
             cat_str_2 = get_key_by_value(cat_num)
             category_dict_2[cat_str_2][0]  += int(debit)
+            category_dict_2[cat_str_2][0]  += int(deposit)
             pass
         elif (exists_in_a_dictonary_or_not == "EXISTING ENTRY" and t_or_f_is_it_special != True):
             pass
