@@ -42,6 +42,7 @@ import sys
 import re
 
 
+
 us_bank_regex = "nop"
 
 bank_dictionary = {}
@@ -64,17 +65,18 @@ category_dict_2 = {"[A]uto": [0],
                    "[J]unk": [0],
                     "[M]oney transfers":[0],
                     "[O]ur House": [0],
-                    "[Q]uit and Save":[0],
+                    "[Q]uit and Save":[-1],
                     "[R]ecreation":[0],
                     "[S]mall stuff":[0],
                     "[T]ravel": [0],
-
-                   "[U]tilities":[0],
-                   "Ta[x]es": [0],
+                    "[U]tilities":[0],
+                   "[V]Not a [V]alid Entry":[0],
+                   "[W]Not a [W]alid Entry ": [0],
+                   "Ta[X]es": [0],
                     "[Y]Unknown": [0],
-                   "Quit[z]- Don't Save": [0],
-                   "Blank1":[0],
-                   "Blank2":[0]
+                   "Quit[Z]-Don't Save": [0],
+                   "[]lank1":[0],
+                   "[]lank2":[0]
                   }
 def month_intro():
     print ("statement for what month?")
@@ -223,20 +225,45 @@ class Add_categories:
         my_set = []
         txt = list(category_dict_2.keys())
         length = len(txt)
-        while c == -1:
+
+        while c == -1 :
+
             c = input()
-            if c.isnumeric():
-                if 1 < c < length:
+            alph_num = c.isalnum()
+
+            if alph_num == False:
+                continue
+            if c.isdigit():
+                pass
+                c = int(c)
+                if 1 < c <= length:
                     return (c)
             pass
+            c_upper = c.upper()
+            pattern = "\["+c_upper+"\]"
             i=1
             for item in txt:
-                if re.search(c.upper(),item):
+                pass
+                if re.search(pattern,item):
                     print (f' match is : {item}')
                     pass
+                    if item == "[Q]uit and Save":
+                        s = Merge_and_save(save_file, sbf_dict)
+                        s.merge_data()
+                        bank_data.popitem()
+                        s.save()  # line 145
+                        print("Saved")
+                        wb.close()
+                        sys.exit()
+                        pass
+                    if item == "Quit[Z]-Don't Save":
+                        print("==== not saving (from Parse) ==")
+                        sys.exit()
+                        pass
                     return (i)
                 i+= 1
             pass
+
 
 
 
@@ -248,10 +275,10 @@ class Add_categories:
         b = Add_categories.input_and_parse_category()
 
         c = b
-        if 0 <= c < 20:
+        txt = len(list(category_dict_2.keys()))
+        if 0 <= c < txt :
             return int(c), int(0)
         if (20 <= c <=30):
-            pass
             if c == magic_number_quit_and_dont_save:
                 return c, c
             elif int(c)  == magic_number_quit_and_save:
@@ -268,7 +295,11 @@ class Add_categories:
 #        key_list = get_list_of_category_keys()
 
         for key, value in category_dict_2.items():
-            print(f'{i}  {key} {value}')
+            s_key = key.split("]")[0]
+            ds_key = s_key.split("[")[1]
+            dds_key = key.split("]")[1]
+            colored_key ="["+"\033[1;32m"+ds_key+"\033[1;0m"+"]"+dds_key
+            print(f'{i}  {colored_key} {value}')
             i = i + 1
     def parse_cat_nums_and_non_standard_exit_programs(self):
         if 0 < cat_num < 20:
@@ -360,8 +391,6 @@ class Merge_and_save:
         today = date.today()
         td = today.strftime("%d/%m/%y")
         date_dict = {"Bank": [bank_name], "Date": [str(td)]}
-
-
         df_date = pd.DataFrame(date_dict)
         with pd.ExcelFile(save_file) as xls:
             if "category sums" in xls.sheet_names:
@@ -569,7 +598,7 @@ while bank_choice !=  "NONE" :
  #       print (f"new_row->key is:{new_row}\n")
         exists_in_a_dictonary_or_not,the_statement_key,the_statement_amount,the_statement_date, category_from_bank_data = a_new_statement_row.is_it_new_to_bank_data(sbf_dict, new_row)
         pass
-        if (exists_in_a_dictonary_or_not == "BANK_DATA EXACTLY SAME AS NEW STATEMENT"):
+        if exists_in_a_dictonary_or_not == "BANK_DATA EXACTLY SAME AS NEW STATEMENT":
             continue
         if (exists_in_a_dictonary_or_not == "EXISTS IN BANK_DATA" ):
 #           print (f"{the_statement_key} of ${the_statement_amount} Is already in bank_data with category {category_from_bank_data}")
@@ -594,11 +623,11 @@ while bank_choice !=  "NONE" :
             print (f"\nNeed category for:{list(sbf_dict.keys())[-1]} in {bank_name_dict[bank_num]} for $ {new_row[statement_headings_dict['AMOUNT'][bank_num]]}")
             new_cat_inst.print_category_menu()
             cat_num, special_cat_num = new_cat_inst.get_category()  #return the normal category number and special (btween 20 and 30
-            if cat_num == -1:
-                break
-            if special_cat_num == magic_number_quit_and_dont_save:
-                print("==== not saving ==")
-                sys.exit()
+#            if cat_num == -1:
+ #               break
+ #           if special_cat_num == magic_number_quit_and_dont_save:
+ #               print("==== not saving ==")
+ #               sys.exit()
             cat_str_2 = get_key_by_value(cat_num)
             cat_num_text_str = category_dict_2[cat_str_2]
             cat_sums = Master_sum(new_amount,cat_num,sbf_dict)
