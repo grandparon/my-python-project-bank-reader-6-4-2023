@@ -10,8 +10,8 @@
 magic_number_quit_and_dont_save= int(20)
 magic_number_quit_and_save= int(21)
 bank_data = {}
-row_count = 0
-statement_rows_remaining = 0
+row_count =rows_this_session = 0
+new_rows_completed = 0
 sums_info_dict = {"date":"str_date"}
 pass
 save_file = "c:\python-write-data\saved_bank_data.xlsx"
@@ -33,6 +33,7 @@ import json
 import pandas as pd
 import os.path
 from openpyxl import load_workbook
+from openpyxl.styles import Font
 import numbers
 from enum import Enum
 import datetime as dt
@@ -537,6 +538,9 @@ bank_num, bank_name = intro()
 month_wanted = month_intro()
 bank_file_1 = Bank(bank_name_dict[bank_num], bank_num, bank_file_name_dict[bank_name], month_wanted, statement_directory)
 bank_file_1.csv_to_xl()
+title_data = [
+    ['Bank', 'Date']
+]
 #--------------------------------------------------
 # find and load existing data file into bank_data
 #--------------------------------------------------
@@ -555,6 +559,11 @@ if os.path.isfile(save_file):
 else:  #create one
     wb = openpyxl.Workbook()
     ws = wb.active
+    for row in title_data:
+        ws.append(row)
+    font = Font(color="FF0000")
+    ws.freeze_panes = "A2"
+#   ws.print_title_rows = "1:1"
     wb.save (filename=save_file)
     pass
 pass
@@ -585,8 +594,9 @@ while bank_choice !=  "NONE" :
 #    print (type(category_sums))
 #    print (category_sums)
     for tupple_new_row in ws.iter_rows(min_row=2, max_row=size[4]+1, min_col=0, max_col=9, values_only = True):
-        statement_rows_remaining += 1
-        print(f"statement rows remaining: { starting_row_count - statement_rows_remaining - row_count }")
+        rows_this_session += 1
+        bd_len = len(bank_data)
+        print(f"statement rows remaining: { starting_row_count - bd_len - new_rows_completed}")
         new_row = list(tupple_new_row)
         if bank_name == "CAPITAL_ONE":
             if new_row[statement_headings_dict['AMOUNT'][bank_num]] == None:
@@ -640,6 +650,7 @@ while bank_choice !=  "NONE" :
             category_dict_2[cat_str_2][0]  += int(debit)
             category_dict_2[cat_str_2][0]  += int(deposit)
             pass
+            new_rows_completed += 1
         elif (exists_in_a_dictonary_or_not == "EXISTING ENTRY" and t_or_f_is_it_special != True):
             pass
             print ("Existing Entry")
