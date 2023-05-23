@@ -1,3 +1,6 @@
+import random
+
+import xlsxwriter
 
 #import pandas
 #Revisions 1.0 Todat 2/11/: playing hith github
@@ -15,14 +18,19 @@ new_rows_completed = 0
 sums_info_dict = {"date":"str_date"}
 pass
 save_file = "c:\python-write-data\saved_bank_data.xlsx"
+saved_graph_file = "c:\python-write-data\saved_graph.xlsx"
+
 statement_directory = "f:Libraries-System-Win10/Downloads"
 sbf_dict = {}
+gws = 0
 
 statement_headings_dict = {"STORE": ["NV",3,7,2], "AMOUNT": ["NV",5,4,4], "DATE": ["NV",1,2,0], "CATEGORY": ["NV",4, 8, 1],"PAYMENT": ["NV",6, 6, 6]}
 bank_file_name_dict = {"CAPITAL_ONE":"transaction_download." ,"US_BANK":"Checking" ,"FIRST_TECH": "ExportedTransactions"}
 sbf_headings_dict = {"BANK NAME": 0, "DATE": 1, "AMOUNT": 2, "CATEGORY":4}
 month_wanted = 1
 temp_cat_sums_from_file = {}
+graphs_sheet_name = "Graphs"
+cat_sheet_name = "category sums"
 # *****************************************************************************
 
 
@@ -34,6 +42,7 @@ import pandas as pd
 import os.path
 from openpyxl import load_workbook
 from openpyxl.styles import Font
+from openpyxl.chart import BarChart, Reference, Series
 import numbers
 from enum import Enum
 import datetime as dt
@@ -41,6 +50,12 @@ from datetime import date
 import calendar
 import sys
 import re
+import matplotlib.pyplot as plt
+
+
+
+
+
 
 
 
@@ -64,8 +79,12 @@ category_dict_2 = {"[A]uto": [0],
                    "[H]ealth":[0],
                    "[I]nterest": [0],
                    "[J]unk": [0],
+                   "[K]not Valid":[0],
+                   "[L]ame Duck": [0],
                     "[M]oney transfers":[0],
+                   "[N]ot This One" : [0],
                     "[O]ur House": [0],
+                    "[P]oor Farm":[0],
                     "[Q]uit and Save":[-1],
                     "[R]ecreation":[0],
                     "[S]mall stuff":[0],
@@ -84,8 +103,9 @@ def month_intro():
     for i in range(1, 12):
         print(f"{i}: {calendar.month_name[i]}")
     mw = input ("\n")
-    if 1 <= int(mw) <= 12:
-        return (int(mw))
+    if mw.isdigit():
+        if 1 <= int(mw) <= 12:
+            return (int(mw))
     else:
         return ("NOT A VALID MONTH")
 def intro():
@@ -94,11 +114,15 @@ def intro():
     print("2 for First Tech")
     print ("3 for US Bank")
     print ("4 for a sum of costs")
+#    print ("5 for a graph")
     print ("0 for exit")
     selection = input("select bank\n")
-
-    if (int(selection) > 0 and int(selection) < 4 ):
-        return (int(selection), bank_name_dict[int(selection)])
+    selection = int(selection)
+    if selection > 0 and selection < 4 :
+        return selection, bank_name_dict[int(selection)]
+#    elif  selection == 5:
+#        g = Graph(save_file)
+#        g.new_graph()
     else:
         exit()
 
@@ -221,7 +245,7 @@ class Bank:
 
 class Add_categories:
 
-    def input_and_parse_category():
+    def input_and_parse_category(self):
         c = -1
         my_set = []
         txt = list(category_dict_2.keys())
@@ -231,14 +255,15 @@ class Add_categories:
 
             c = input()
             alph_num = c.isalnum()
-
             if alph_num == False:
                 continue
+
             if c.isdigit():
-                pass
-                c = int(c)
-                if 1 < c <= length:
-                    return (c)
+                mmm = txt[int(c)-1]
+                nnn = re.search("\[(\w+)\]", mmm)
+                c = nnn.group(1)
+
+
             pass
             c_upper = c.upper()
             pattern = "\["+c_upper+"\]"
@@ -246,21 +271,21 @@ class Add_categories:
             for item in txt:
                 pass
                 if re.search(pattern,item):
-                    print (f' match is : {item}')
-                    pass
-                    if item == "[Q]uit and Save":
-                        s = Merge_and_save(save_file, sbf_dict)
-                        s.merge_data()
-                        bank_data.popitem()
-                        s.save()  # line 145
-                        print("Saved")
-                        wb.close()
-                        sys.exit()
-                        pass
-                    if item == "Quit[Z]-Don't Save":
-                        print("==== not saving (from Parse) ==")
-                        sys.exit()
-                        pass
+                #     print (f' match is : {item}')
+                #     pass
+                #     if item == "[Q]uit and Save":
+                #         s = Merge_and_save(save_file, sbf_dict)
+                #         s.merge_data()
+                #         bank_data.popitem()
+                #         s.save()  # line 145
+                #         print("Saved")
+                #         wb.close()
+                #         sys.exit()
+                #         pass
+                #     if item == "Quit[Z]-Don't Save":
+                #         print("==== not saving (from Parse) ==")
+                #         sys.exit()
+                #         pass
                     return (i)
                 i+= 1
             pass
@@ -273,22 +298,12 @@ class Add_categories:
  #           for c in [2,"b", "B"]: return(2)
  #           for c in [3,"b","B"]: return (3)
     def get_category(self):
-        b = Add_categories.input_and_parse_category()
+        b = Add_categories.input_and_parse_category(self)
 
         c = b
         txt = len(list(category_dict_2.keys()))
         if 0 <= c < txt :
             return int(c), int(0)
-        if (20 <= c <=30):
-            if c == magic_number_quit_and_dont_save:
-                return c, c
-            elif int(c)  == magic_number_quit_and_save:
-                print(f"ok special but finish this statement row first")
-                nc2 = input("pick a number for this last category")  #finish the last category before exiting
-                return int(nc2), int(c)
-        else:
-            print ("NOT A VALID CATEGORY NUMBER")
-            return int(-1), int(-1)
 
 
     def print_category_menu(self):
@@ -375,10 +390,11 @@ class Summaries():
             bank_sum = bank_sum + one_key
 
 class Merge_and_save:
-    def __init__(self, save_file, sbf_dict):
+    def __init__(self, save_file, sbf_dict, df_g):
         pass
         self.save_file = save_file
         self.sbf_dict = sbf_dict
+        self.df_g = df_g
 
 
     def save_bank_data_to_excel(self):
@@ -388,7 +404,8 @@ class Merge_and_save:
         pass
         bank_data.update(sbf_dict)
         pass
-    def save (self):
+    def save (self, df_g):
+
         today = date.today()
         td = today.strftime("%d/%m/%y")
         date_dict = {"Bank": [bank_name], "Date": [str(td)]}
@@ -419,8 +436,18 @@ class Merge_and_save:
             pass
 
         pass
-        excel_pandas_file = pd.ExcelFile(save_file)
-        with pd.ExcelWriter(save_file) as writer:
+        df = pd.DataFrame({"data": [1, 2, 3, 4, 5, 6, 7]})
+        writer = pd.ExcelWriter(save_file, engine="xlsxwriter")
+        df.to_excel(writer)
+
+        chart = workbook.add_chart({'type': 'column'})
+        chart.add_series({
+            'values': '=\'Sheet 1\'!$B$2:$B$8',
+            "name": "My Series's Name"
+        })
+        workshit.insert_chart('D2', chart)
+        with pd.ExcelWriter(save_file, engine='xlsxwriter') as writer:
+
             if "category sums" in excel_pandas_file.sheet_names:
                 pass
                 df_from_bank_data.T.to_excel(writer)
@@ -522,25 +549,128 @@ class New_statement_row:
         return
 
 
+class Graph:
+    def __init__(self, save_file):
+        self.save_file = save_file
+
+    def new_pandas_graph(self):
+        pass
+
+    def new_graph(self):
+#        workbook = xlsxwriter.Workbook(saved_graph_file)
+        workbook = xlsxwriter.Workbook(save_file)
+
+        worksheet = workbook.add_worksheet(graphs_sheet_name)
+        bold = workbook.add_format({"bold": 1})
+
+        # Add the worksheet data that the charts will refer to.
+        headings = ["Category", "Values"]
+        data = [
+            ["Apple", "Cherry", "Pecan"],
+            [60, 30, 10],
+        ]
+
+        worksheet.write_row("A1", headings, bold)
+        worksheet.write_column("A2", data[0])
+        worksheet.write_column("B2", data[1])
+
+        #######################################################################
+        #
+        # Create a new chart object.
+        #
+        chart1 = workbook.add_chart({"type": "pie"})
+
+        # Configure the series. Note the use of the list syntax to define ranges:
+        chart1.add_series(
+            {
+                "name": "Pie sales data",
+                "categories": ["Sheet1", 1, 0, 3, 0],
+                "values": [graphs_sheet_name, 1, 1, 3, 1],
+            }
+        )
+
+        # Add a title.
+        chart1.set_title({"name": "Popular Pie Types"})
+
+        # Set an Excel chart style. Colors with white outline and shadow.
+        chart1.set_style(10)
+
+        # Insert the chart into the worksheet (with an offset).
+        worksheet.insert_chart("C2", chart1, {"x_offset": 25, "y_offset": 10})
+
+        #######################################################################
+        #
+        # Create a Pie chart with user defined segment colors.
+        #
+
+        # Create an example Pie chart like above.
+        chart2 = workbook.add_chart({"type": "pie"})
+
+        # Configure the series and add user defined segment colors.
+        chart2.add_series(
+            {
+                "name": "Pie sales data",
+                "categories": "=Sheet1!$A$2:$A$4",
+                "values": "=graphs_sheet_name!$B$2:$B$4",
+                "points": [
+                    {"fill": {"color": "#5ABA10"}},
+                    {"fill": {"color": "#FE110E"}},
+                    {"fill": {"color": "#CA5C05"}},
+                ],
+            }
+        )
+
+        # Add a title.
+        chart2.set_title({"name": "Pie Chart with user defined colors"})
+
+        # Insert the chart into the worksheet (with an offset).
+        worksheet.insert_chart("C18", chart2, {"x_offset": 25, "y_offset": 10})
+
+        #######################################################################
+        #
+        # Create a Pie chart with rotation of the segments.
+        #
+
+        # Create an example Pie chart like above.
+        chart3 = workbook.add_chart({"type": "pie"})
+
+        # Configure the series.
+        chart3.add_series(
+            {
+                "name": "Pie sales data",
+                "categories": "=Sheet1!$A$2:$A$4",
+                "values": "=graphs_sheet_name!$B$2:$B$4",
+            }
+        )
+
+        # Add a title.
+        chart3.set_title({"name": "Pie Chart with segment rotation"})
+
+        # Change the angle/rotation of the first segment.
+        chart3.set_rotation(90)
+
+        # Insert the chart into the worksheet (with an offset).
+        worksheet.insert_chart("C34", chart3, {"x_offset": 25, "y_offset": 10})
+
+        workbook.close()
+        pass
 
 
+#**************************************************************
+    # +++++++++++++++++++++++++|
+    #   Start of Main          |
+    # +++++++++++++++++++++++++|
+#**************************************************************
 bank_choice = "9"
-#bank_name = "none picked yet"
 total = 0
-special_cat_num = 0
+y= 'y'
+df_g = 0
+#if os.path.isfile(save_file):
+#    while y == "y":
+#        y = input("Graphs?")
+ #       g = Graph(save_file, gws)
+ #       g.new_graph()
 
-
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#   Start of Main
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++
-t_or_f_is_it_special = False
-bank_num, bank_name = intro()
-month_wanted = month_intro()
-bank_file_1 = Bank(bank_name_dict[bank_num], bank_num, bank_file_name_dict[bank_name], month_wanted, statement_directory)
-bank_file_1.csv_to_xl()
-title_data = [
-    ['Bank', 'Date']
-]
 #--------------------------------------------------
 # find and load existing data file into bank_data
 #--------------------------------------------------
@@ -559,18 +689,26 @@ if os.path.isfile(save_file):
 else:  #create one
     wb = openpyxl.Workbook()
     ws = wb.active
-    for row in title_data:
-        ws.append(row)
-    font = Font(color="FF0000")
-    ws.freeze_panes = "A2"
-#   ws.print_title_rows = "1:1"
+    gws = wb.create_sheet(graphs_sheet_name)
+    sws = wb.create_sheet('category sums')
+    ws.column_dimensions["B"].width = 300
     wb.save (filename=save_file)
     pass
 pass
+_or_f_is_it_special = False
+bank_num, bank_name = intro()
+month_wanted = month_intro()
+bank_file_1 = Bank(bank_name_dict[bank_num], bank_num, bank_file_name_dict[bank_name], month_wanted, statement_directory)
+bank_file_1.csv_to_xl()
+title_data = [
+    ['Bank', 'Date']
+]
+
 
 while bank_choice !=  "NONE" :
     pass
     total_debit = 0
+    quit_or_save = False
     total_deposit = 0
     category_from_bank_data = 0
     debit = 0
@@ -594,6 +732,8 @@ while bank_choice !=  "NONE" :
 #    print (type(category_sums))
 #    print (category_sums)
     for tupple_new_row in ws.iter_rows(min_row=2, max_row=size[4]+1, min_col=0, max_col=9, values_only = True):
+        if quit_or_save == True:
+            break
         rows_this_session += 1
         bd_len = len(bank_data)
         print(f"statement rows remaining: { starting_row_count - bd_len - new_rows_completed}")
@@ -621,10 +761,6 @@ while bank_choice !=  "NONE" :
                 debit = (the_statement_amount)
                 total_deposit += deposit
                 total_debit += debit
-
-
- #               category_sums[]
-                #SHOULD ADD THE NEW STATEMENT AMOUNT TO THE VALUE IN BANK DATA!!! DO IT
                 bank_data[the_statement_key][sbf_headings_dict["AMOUNT"]] += the_statement_amount
 
         if  exists_in_a_dictonary_or_not == "NEW ENTRY":
@@ -633,11 +769,7 @@ while bank_choice !=  "NONE" :
             print (f"\nNeed category for:{list(sbf_dict.keys())[-1]} in {bank_name_dict[bank_num]} for $ {new_row[statement_headings_dict['AMOUNT'][bank_num]]}")
             new_cat_inst.print_category_menu()
             cat_num, special_cat_num = new_cat_inst.get_category()  #return the normal category number and special (btween 20 and 30
-#            if cat_num == -1:
- #               break
- #           if special_cat_num == magic_number_quit_and_dont_save:
- #               print("==== not saving ==")
- #               sys.exit()
+
             cat_str_2 = get_key_by_value(cat_num)
             cat_num_text_str = category_dict_2[cat_str_2]
             cat_sums = Master_sum(new_amount,cat_num,sbf_dict)
@@ -651,6 +783,10 @@ while bank_choice !=  "NONE" :
             category_dict_2[cat_str_2][0]  += int(deposit)
             pass
             new_rows_completed += 1
+            pass
+            if cat_str_2 == '[Q]uit and Save' or  cat_str_2 == "Quit[Z]-Don't Save":
+                quit_or_save = True
+                bank_choice = 'NONE'
         elif (exists_in_a_dictonary_or_not == "EXISTING ENTRY" and t_or_f_is_it_special != True):
             pass
             print ("Existing Entry")
@@ -659,23 +795,29 @@ while bank_choice !=  "NONE" :
             debit, deposit, category = cat_sums.fix_new_amount_signs(a_new_sbf_dict_key, total)
             print (f" Existing Vendor will add {debit} to {a_new_sbf_dict_key}'s category which is: {cat_num}")
         pass
-        if 20 <= special_cat_num <= 30:
-            break
-    s = Merge_and_save(save_file, sbf_dict)
-    s.merge_data()
-    s.save()  # line 145
-    print ("Saved")
-    wb.close()
-
-
-    if special_cat_num == magic_number_quit_and_save:
-        exit()
+    if quit_or_save == "Quit[Z]-Don't Save":
+        print("==== Quit - not saving ====")
         sys.exit()
-    print ("Reached end of Statement")
-    print("SAVED")
-    print("CLOSED")
+        pass
+    s = Merge_and_save(save_file, sbf_dict, df_g)
+    s.merge_data()
+    # g = Graph(save_file)
+    # df_g = g.new_graph()
+    s.save(df_g)  # line 145
 
-    exit()
+
+    print ("Saved")
+ #   wb.close()
+
+
+  #  if special_cat_num == magic_number_quit_and_save:
+  #      exit()
+  #      sys.exit()
+  #  print ("Reached end of Statement")
+  #  print("SAVED")
+  #  print("CLOSED")
+
+
 
 
 
