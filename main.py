@@ -42,7 +42,8 @@ import pandas as pd
 import os.path
 from openpyxl import load_workbook
 from openpyxl.styles import Font
-from openpyxl.chart import BarChart, Reference, Series
+from openpyxl.chart import BubbleChart,  BarChart, PieChart, ProjectedPieChart, Series, Reference
+from openpyxl.chart.series import DataPoint
 import numbers
 from enum import Enum
 import datetime as dt
@@ -51,6 +52,7 @@ import calendar
 import sys
 import re
 import matplotlib.pyplot as plt
+
 
 
 
@@ -396,6 +398,40 @@ class Merge_and_save:
         self.sbf_dict = sbf_dict
         self.df_g = df_g
 
+    def copy_chart(self, src_file, dest_file):
+        # importing openpyxl module
+        import openpyxl as xl;
+
+        # opening the source excel file
+        filename = src_file
+        wb1 = xl.load_workbook(filename)
+        ws1 = wb1.active
+
+
+        # opening the destination excel file
+        filename1 = dest_file
+        wb2 = xl.load_workbook(filename1)
+        # ws2 = wb2.active
+        # ws1 = wb1.worksheets["copied chart"]
+        ws2 = wb2.create_sheet("Copied Chart")
+
+        # calculate total number of rows and
+        # columns in source excel file
+        mr = ws1.max_row
+        mc = ws1.max_column
+
+        # copying the cell values from source
+        # excel file to destination excel file
+        for i in range(1, mr + 1):
+            for j in range(1, mc + 1):
+                # reading cell value from source excel file
+                c = ws1.cell(row=i, column=j)
+
+                # writing the read value to destination excel file
+                ws2.cell(row=i, column=j).value = c.value
+
+        # saving the destination excel file
+        wb2.save(str(filename1))
 
     def save_bank_data_to_excel(self):
         pass
@@ -436,16 +472,16 @@ class Merge_and_save:
             pass
 
         pass
-        df = pd.DataFrame({"data": [1, 2, 3, 4, 5, 6, 7]})
-        writer = pd.ExcelWriter(save_file, engine="xlsxwriter")
-        df.to_excel(writer)
-
-        chart = workbook.add_chart({'type': 'column'})
-        chart.add_series({
-            'values': '=\'Sheet 1\'!$B$2:$B$8',
-            "name": "My Series's Name"
-        })
-        workshit.insert_chart('D2', chart)
+        # df = pd.DataFrame({"data": [1, 2, 3, 4, 5, 6, 7]})
+        # writer = pd.ExcelWriter(save_file, engine="xlsxwriter")
+        # df.to_excel(writer)
+        #
+        # chart = workbook.add_chart({'type': 'column'})
+        # chart.add_series({
+        #     'values': '=\'Sheet 1\'!$B$2:$B$8',
+        #     "name": "My Series's Name"
+        # })
+        # workshit.insert_chart('D2', chart)
         with pd.ExcelWriter(save_file, engine='xlsxwriter') as writer:
 
             if "category sums" in excel_pandas_file.sheet_names:
@@ -548,112 +584,148 @@ class New_statement_row:
 
         return
 
-
-class Graph:
-    def __init__(self, save_file):
+class Charts:
+    def __init__(self, save_file, category_dict_2):
         self.save_file = save_file
+        self.category_dict_2 = category_dict_2
 
-    def new_pandas_graph(self):
+        cat_list = list[category_dict_2]
         pass
+    # # class Open_with_openpyxl:
+    # def __init(self, save_file):
+    #     self.save_file = save_file
+    def new_tab(self):
 
-    def new_graph(self):
-#        workbook = xlsxwriter.Workbook(saved_graph_file)
-        workbook = xlsxwriter.Workbook(save_file)
+        wb_charts = load_workbook(save_file)
+        ws_b = wb_charts.create_sheet ("Bubble Chart")
+        ws_p = wb_charts.create_sheet ("Pie Chart")
+        # ws_g2['A4'] = 4
+        pass
+        return wb_charts, ws_b, ws_p
 
-        worksheet = workbook.add_worksheet(graphs_sheet_name)
-        bold = workbook.add_format({"bold": 1})
-
-        # Add the worksheet data that the charts will refer to.
-        headings = ["Category", "Values"]
+    def pie_chart (self, wb_g2, ws_g2):
         data = [
-            ["Apple", "Cherry", "Pecan"],
-            [60, 30, 10],
+            ['Pie', 'Sold'],
+            ['Apple', 50],
+            ['Cherry', 30],
+            ['Pumpkin', 10],
+            ['Chocolate', 40],
+        ]
+        wb = wb_g2
+        ws = ws_g2
+        # wb = Workbook()
+        # ws = wb.active
+
+        for row in data:
+            ws.append(row)
+
+        pie = PieChart()
+        labels = Reference(ws, min_col=1, min_row=2, max_row=5)
+        data = Reference(ws, min_col=2, min_row=1, max_row=5)
+        pie.add_data(data, titles_from_data=True)
+        pie.set_categories(labels)
+        pie.title = "Pies sold by category"
+
+        # Cut the first slice out of the pie
+        slice = DataPoint(idx=0, explosion=20)
+        pie.series[0].data_points = [slice]
+
+        ws.add_chart(pie, "D1")
+
+        ws = wb.create_sheet(title="Projection")
+
+        data = [
+            ['Page', 'Views'],
+            ['Search', 95],
+            ['Products', 4],
+            ['Offers', 0.5],
+            ['Sales', 0.5],
         ]
 
-        worksheet.write_row("A1", headings, bold)
-        worksheet.write_column("A2", data[0])
-        worksheet.write_column("B2", data[1])
+        for row in data:
+            ws.append(row)
 
-        #######################################################################
-        #
-        # Create a new chart object.
-        #
-        chart1 = workbook.add_chart({"type": "pie"})
+        projected_pie = ProjectedPieChart()
+        projected_pie.type = "pie"
+        projected_pie.splitType = "val"  # split by value
+        labels = Reference(ws, min_col=1, min_row=2, max_row=5)
+        data = Reference(ws, min_col=2, min_row=1, max_row=5)
+        projected_pie.add_data(data, titles_from_data=True)
+        projected_pie.set_categories(labels)
 
-        # Configure the series. Note the use of the list syntax to define ranges:
-        chart1.add_series(
-            {
-                "name": "Pie sales data",
-                "categories": ["Sheet1", 1, 0, 3, 0],
-                "values": [graphs_sheet_name, 1, 1, 3, 1],
-            }
-        )
+        ws.add_chart(projected_pie, "A10")
 
-        # Add a title.
-        chart1.set_title({"name": "Popular Pie Types"})
+        from copy import deepcopy
+        projected_bar = deepcopy(projected_pie)
+        projected_bar.type = "bar"
+        projected_bar.splitType = 'pos'  # split by position
 
-        # Set an Excel chart style. Colors with white outline and shadow.
-        chart1.set_style(10)
+        ws.add_chart(projected_bar, "A27")
 
-        # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart("C2", chart1, {"x_offset": 25, "y_offset": 10})
+        # wb.save("pie.xlsx")
+    def bubble_chart (self, wb_g2, ws_g2):
 
-        #######################################################################
-        #
-        # Create a Pie chart with user defined segment colors.
-        #
+        sheet = ws_g2
+        rows = [
+            ("Number of Products", "Sales in USD", "Market share"),
+            (14, 12200, 15),
+            (20, 60000, 33),
+            (18, 24400, 10),
+            (22, 32000, 42),
+        ]
 
-        # Create an example Pie chart like above.
-        chart2 = workbook.add_chart({"type": "pie"})
+        for row in rows:
+            sheet.append(row)
 
-        # Configure the series and add user defined segment colors.
-        chart2.add_series(
-            {
-                "name": "Pie sales data",
-                "categories": "=Sheet1!$A$2:$A$4",
-                "values": "=graphs_sheet_name!$B$2:$B$4",
-                "points": [
-                    {"fill": {"color": "#5ABA10"}},
-                    {"fill": {"color": "#FE110E"}},
-                    {"fill": {"color": "#CA5C05"}},
-                ],
-            }
-        )
+        # Create object of BubbleChart class
+        chart = BubbleChart()
 
-        # Add a title.
-        chart2.set_title({"name": "Pie Chart with user defined colors"})
+        # create data for plotting
+        xvalues = Reference(sheet, min_col=1,
+                            min_row=2, max_row=5)
 
-        # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart("C18", chart2, {"x_offset": 25, "y_offset": 10})
+        yvalues = Reference(sheet, min_col=2,
+                            min_row=2, max_row=5)
 
-        #######################################################################
-        #
-        # Create a Pie chart with rotation of the segments.
-        #
+        size = Reference(sheet, min_col=3,
+                         min_row=2, max_row=5)
 
-        # Create an example Pie chart like above.
-        chart3 = workbook.add_chart({"type": "pie"})
+        # create a 1st series of data
+        series = Series(values=yvalues, xvalues=xvalues,
+                        zvalues=size, title="2013")
 
-        # Configure the series.
-        chart3.add_series(
-            {
-                "name": "Pie sales data",
-                "categories": "=Sheet1!$A$2:$A$4",
-                "values": "=graphs_sheet_name!$B$2:$B$4",
-            }
-        )
-
-        # Add a title.
-        chart3.set_title({"name": "Pie Chart with segment rotation"})
-
-        # Change the angle/rotation of the first segment.
-        chart3.set_rotation(90)
-
-        # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart("C34", chart3, {"x_offset": 25, "y_offset": 10})
-
-        workbook.close()
+        # add series data to the chart object
+        chart.series.append(series)
+        # wb_g2.save(save_file)
         pass
+        # set the title of the chart
+        chart.title = " BUBBLE-CHART "
+
+        # set the title of the x-axis
+        chart.x_axis.title = " X_AXIS "
+
+        # set the title of the y-axis
+        chart.y_axis.title = " Y_AXIS "
+
+        # add chart to the sheet
+        # the top-left corner of a chart
+        # is anchored to cell E2 .
+        sheet.add_chart(chart, "E2")
+        # wb_g2.save(save_file)
+
+
+
+    # def new_graph_2(self):
+    #     treeData = [["Type", "Leaf Color", "Height"], ["Maple", "Red", 549], ["Oak", "Green", 783],
+    #                ["Pine", "Green", 1204]]
+    #
+    #     for row in treeData:
+    #         # ws_g2.append(row)
+    #         pass
+    #     wb.save(save_file)
+    #     pass
+
+
 
 
 #**************************************************************
@@ -689,8 +761,9 @@ if os.path.isfile(save_file):
 else:  #create one
     wb = openpyxl.Workbook()
     ws = wb.active
-    gws = wb.create_sheet(graphs_sheet_name)
+    gws = wb.create_sheet("A graph sheet")
     sws = wb.create_sheet('category sums')
+    tws = wb.create_sheet('vategory totals')
     ws.column_dimensions["B"].width = 300
     wb.save (filename=save_file)
     pass
@@ -804,7 +877,13 @@ while bank_choice !=  "NONE" :
     # g = Graph(save_file)
     # df_g = g.new_graph()
     s.save(df_g)  # line 145
-
+    # s.copy_chart(saved_graph_file, save_file)
+    c = Charts(save_file, category_dict_2)
+    wb_charts, ws_b, ws_p = c.new_tab ()
+    c.bubble_chart(wb_charts, ws_b)
+    c.pie_chart(wb_charts, ws_p)
+    wb_charts.save(save_file)
+    # g.new_graph_2()
 
     print ("Saved")
  #   wb.close()
