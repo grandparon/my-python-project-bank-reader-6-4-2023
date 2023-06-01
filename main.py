@@ -68,10 +68,6 @@ us_bank_regex = "nop"
 
 bank_dictionary = {}
 bank_name_dict = { 0: "EXIT", 1: "CAPITAL_ONE", 2: "FIRST_TECH", 3: "US_BANK"}
-#category_dict = {1:["Boat",0], 2: ["Food",0], 3:["Dining",0], 4: ["House",0], 5:["Travel",0], 6:["Utilities",0], 7:["Auto",0], 8:["Health",0],
-#                 9:["Deductable",0], 10: ["Recreation",0], 11: ["Unknown",0], 12: ["Pay Credit Card",0], 13: ["Deposits to USB",0],
-#                 14:["Money Transfers",0], 15: ["Interest",0], 16:["Trivials",0],17: ["Taxes",0], 18: ["Date", "STR"], 19: ["Bank", "STR"], 20: ["Print bank_data",0], 21: ["Print Sums",0],
-#                 22: ["Quit but don't Save",0], 23: ["Save and Quit",0]}
 
 
 category_dict_2 = {"[A]uto": [0],
@@ -319,15 +315,7 @@ class Add_categories:
     def parse_cat_nums_and_non_standard_exit_programs(self):
         if 0 < cat_num < 20:
             return ( False, False)
- #       if cat_num == 20:
- #           print ("PRINTING BANK_DATA then continue")
- #           self.print_json()
- #           return (20, True)
- #       elif cat_num == 21:
- #           print ("PRINTING CATEGORY SUMS then continue")
- #           ms = Master_sum(0,0,0)
- #           ms.print_cat_sums()
- #           return (21, True)
+
         elif cat_num == magic_number_quit_and_dont_save:
             print ("EXITING without saving session")
             exit()
@@ -425,8 +413,7 @@ class Merge_and_save:
         # opening the destination excel file
         filename1 = dest_file
         wb2 = xl.load_workbook(filename1)
-        # ws2 = wb2.active
-        # ws1 = wb1.worksheets["copied chart"]
+
         ws2 = wb2.create_sheet("Copied Chart")
 
         # calculate total number of rows and
@@ -493,16 +480,7 @@ class Merge_and_save:
             pass
 
         pass
-        # df = pd.DataFrame({"data": [1, 2, 3, 4, 5, 6, 7]})
-        # writer = pd.ExcelWriter(save_file, engine="xlsxwriter")
-        # df.to_excel(writer)
-        #
-        # chart = workbook.add_chart({'type': 'column'})
-        # chart.add_series({
-        #     'values': '=\'Sheet 1\'!$B$2:$B$8',
-        #     "name": "My Series's Name"
-        # })
-        # workshit.insert_chart('D2', chart)
+
         with pd.ExcelWriter(save_file, engine='xlsxwriter') as writer:
 
             if "category sums" in excel_pandas_file.sheet_names:
@@ -757,16 +735,6 @@ class Charts:
 
         sheet['A13'] = total_debit
 
-    # def new_graph_2(self):
-    #     treeData = [["Type", "Leaf Color", "Height"], ["Maple", "Red", 549], ["Oak", "Green", 783],
-    #                ["Pine", "Green", 1204]]
-    #
-    #     for row in treeData:
-    #         # ws_g2.append(row)
-    #         pass
-    #     wb.save(save_file)
-    #     pass
-
 
 
 
@@ -781,11 +749,6 @@ y= 'y'
 df_g = 0
 list_of_lists_for_charts = []
 
-#if os.path.isfile(save_file):
-#    while y == "y":
-#        y = input("Graphs?")
- #       g = Graph(save_file, gws)
- #       g.new_graph()
 
 #--------------------------------------------------
 # find and load existing data file into bank_data
@@ -954,13 +917,6 @@ while bank_choice !=  "NONE" :
 print ("Saved")
 wb.close()
 
-
-  #  if special_cat_num == magic_number_quit_and_save:
-  #      exit()
-  #      sys.exit()
-  #  print ("Reached end of Statement")
-  #  print("SAVED")
-  #  print("CLOSED")
 
 
 
