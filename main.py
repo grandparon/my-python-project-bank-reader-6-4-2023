@@ -31,7 +31,7 @@ sbf_headings_dict = {"BANK NAME": 0, "DATE": 1, "AMOUNT": 2, "CATEGORY":4}
 month_wanted = 1
 temp_cat_sums_from_file = {}
 graphs_sheet_name = "Graphs"
-cat_sheet_name = "category sums"
+# cat_sheet_name = "category sums"
 total_debit = 0
 total_deposit = 0
 # *****************************************************************************
@@ -78,7 +78,7 @@ category_dict_2 = {"[A]uto": [0],
                    "[F]ood and resturents": [0],
                     "[G]iving":[0],
                    "[H]ealth":[0],
-                   "[I]nterest": [0],
+                   "[I]ncome": [0],
                    "[J]unk": [0],
                    "[K]not Valid":[0],
                    "[L]ame Duck": [0],
@@ -121,13 +121,9 @@ def intro():
     selection = int(selection)
     if selection > 0 and selection < 4 :
         return selection, bank_name_dict[int(selection)]
-#    elif  selection == 5:
-#        g = Graph(save_file)
-#        g.new_graph()
+
     else:
         exit()
-
-
 
 def  get_key_by_value(val):
     keys_list = get_list_of_category_keys()
@@ -441,7 +437,7 @@ class Merge_and_save:
         pass
         bank_data.update(sbf_dict)
         pass
-    def save (self, df_g):
+    def  save (self, df_g):
         nice_category_dict = {}
         for key, value in category_dict_2.items():
             nice = new_cat_inst.make_nice_text(key)
@@ -487,11 +483,11 @@ class Merge_and_save:
                 pass
                 df_from_bank_data.T.to_excel(writer)
                 df_either.to_excel(writer, sheet_name= 'category sums', startrow=0, startcol=0, header=True)
+                pass
             else:
                 df_from_bank_data.T.to_excel(writer, sheet_name="Sheet1")
                 df_11.to_excel(writer, sheet_name="category sums", index=False)
-
-
+                pass
     def add_category(self):
         def __init__(self):
             print ("add a category for")
@@ -608,7 +604,7 @@ class Charts:
         return wb_charts, ws_b, ws_p, ws_t
     def chart_data_setup(self):
         i=0
-        bbt = [["cat", "money"]]
+        bbt = [["category", "money"]]
         #get category and amount as a list of two values, store them in bbt
         for key in bank_data:
 
@@ -643,7 +639,7 @@ class Charts:
         data_y = Reference(ws, min_col=2, min_row=1, max_row=i)
         pie.add_data(data_y, titles_from_data=True)
         pie.set_categories(labels)
-        pie.title = "Pies sold by category"
+        pie.title = "Pies by category"
 
         # Cut the first slice out of the pie
         slice = DataPoint(idx=0, explosion=20)
@@ -788,7 +784,7 @@ title_data = [
 ]
 new_store = ""
 
-while bank_choice !=  "NONE" :
+while bank_choice !=  "DONE" :
     pass
 
     quit_or_save = False
@@ -858,7 +854,7 @@ while bank_choice !=  "NONE" :
             cat_num, special_cat_num = new_cat_inst.get_category()  #return the normal category number and special (btween 20 and 30
             pass
             if cat_num == 17:
-                bank_choice = "NONE"
+                bank_choice = "DONE"
                 sbf_dict.popitem()
                 break
             cat_str_2 = get_key_by_value(cat_num)
@@ -880,7 +876,7 @@ while bank_choice !=  "NONE" :
             pass
             if cat_str_2 == '[Q]uit and Save.' or  cat_str_2 == "Quit[Z]-Don't Save.":
                 quit_or_save = True
-                bank_choice = 'NONE'
+                bank_choice = 'DONE'
             if cat_str_2 == '[Q]uit and Save.':
                 save_then_quit = True
         elif (exists_in_a_dictonary_or_not == "EXISTING ENTRY" and t_or_f_is_it_special != True):
@@ -894,7 +890,7 @@ while bank_choice !=  "NONE" :
     if quit_or_save == "Quit[Z]-Don't Save.":
         print("==== Quit - not saving ====")
         sys.exit()
-
+    bank_choice = "DONE"
     s = Merge_and_save(save_file, sbf_dict, df_g)
     s.merge_data()
     # g = Graph(save_file)
@@ -913,7 +909,7 @@ while bank_choice !=  "NONE" :
     # ms = Master_sum(ws_t, total_debit,cat_num, sbf_dict)
     # ms.sum_of_all_cat_debit()
 
-    bank_choice = "DONE"
+
 print ("Saved")
 wb.close()
 
